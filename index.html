@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATC - TKR Program SMK Karya Bahana Mandiri</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        .section-hidden { display: none !important; }
+        .nav-btn.active { background-color: #1e293b; border-bottom: 3px solid #facc15; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <header class="bg-blue-800 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-white rounded-full p-1 flex items-center justify-center overflow-hidden">
+                    <img src="https://iili.io/qY0WbnI.md.png" alt="Logo" class="max-h-full">
+                </div>
+                <div>
+                    <h1 class="font-bold uppercase text-sm">ATC - TKR PROGRAM</h1>
+                    <p class="text-[10px] text-blue-200">SMK Karya Bahana Mandiri</p>
+                </div>
+            </div>
+            <div id="clock" class="text-xs font-mono bg-blue-900 px-3 py-1 rounded"></div>
+        </div>
+        <nav class="bg-slate-900 flex overflow-x-auto">
+            <button onclick="window.switchSection('beranda', this)" class="nav-btn active px-6 py-3 text-sm">Beranda</button>
+            <button onclick="window.switchSection('jadwal', this)" class="nav-btn px-6 py-3 text-sm">Jadwal Ujian</button>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <section id="beranda" class="space-y-6">
+            <div class="bg-blue-700 rounded-xl p-6 text-white shadow-lg border-b-4 border-yellow-500">
+                <h2 class="text-lg font-bold mb-4"><i class="fas fa-id-card mr-2"></i>Kartu Sesi Ujian Praktik</h2>
+                <div class="flex flex-col gap-3">
+                    <select id="selectNama" class="w-full p-3 rounded text-gray-900 outline-none">
+                        <option value="">-- Pilih Nama Siswa --</option>
+                    </select>
+                    <button onclick="window.cariJadwal()" class="bg-yellow-500 px-6 py-3 rounded font-bold text-black hover:bg-yellow-400 transition">Tampilkan Kartu</button>
+                </div>
+                <div id="hasilCek" class="mt-6 hidden"></div>
+            </div>
+        </section>
+
+        <section id="jadwal" class="section-hidden bg-white p-6 rounded shadow">
+            <h2 class="text-xl font-bold mb-4">Daftar Jadwal 38 Siswa Praktik</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border">
+                    <thead class="bg-gray-100 uppercase">
+                        <tr><th class="p-2 border">NAMA</th><th class="p-2 border">KELAS</th><th class="p-2 border">SESI</th><th class="p-2 border">WAKTU</th></tr>
+                    </thead>
+                    <tbody id="tabelJadwal"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const dataSiswa = [
+            { nama: "ADRIAN EKA SURYA PRAMUDITA", kelas: "X TKR 6", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "AHMAD MAULANA", kelas: "X TKR 6", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "AHMAD SAEPUDIN", kelas: "X TKR 4", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "AKMAL NUGROHO", kelas: "X TKR 4", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "ANDRE HERDIANSYAH", kelas: "X TKR 1", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "ANDRIE", kelas: "X TKR 8", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "ARIEF SAPUTRA", kelas: "X TKR 1", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "ARYO RIDHO SYAHPUTRA", kelas: "X TKR 3", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "ATHAYA RASYA RAMADHAN", kelas: "X TKR 6", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "DAFI DHAIFULLAH", kelas: "X TKR 2", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "DIKA ALI KALPEN", kelas: "X TKR 4", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "DIMAS MUNGGARAN", kelas: "X TKR 1", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "FAHMI HIDAYAT", kelas: "X TKR 8", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "FEBRYANT DIVYANOV HADIW POHAN", kelas: "X TKR 4", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "FIKRI MAULANA RAMADHAN", kelas: "X TKR 3", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "HADYAN WIRAJAYA PRATAMA", kelas: "X TKR 8", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "HAFIDIN ARIZKI", kelas: "X TKR 6", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "IBNU SABIL", kelas: "X TKR 5", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "IMAM LATHIF MUHTARAM", kelas: "X TKR 8", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "IRFANA FAUZAN SYARIFUDDIN", kelas: "X TKR 4", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "M. FARIZ AZZAKY", kelas: "X TKR 1", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "M. HASAN", kelas: "X TKR 2", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "M. RICO SIKUMBANG", kelas: "X TKR 8", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "MUHAMAD BINTANG FADILA", kelas: "X TKR 1", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "MUHAMMAD ABDUL FATTAH", kelas: "X TKR 8", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "MUHAMMAD AZIS MUSLIM", kelas: "X TKR 3", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "MUHAMMAD FACHRIZI", kelas: "X TKR 8", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "MUHAMMAD HUSEN", kelas: "X TKR 5", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "MUHAMMAD ZAKI", kelas: "X TKR 8", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "PUTRA DIAS APRILIAN", kelas: "X TKR 8", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "QOIS KHOIRUL AZZAM", kelas: "X TKR 8", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "REZA AKBAR RUDIANSYAH", kelas: "X TKR 2", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "RIDWAN", kelas: "X TKR 4", sesi: 2, waktu: "10.00-12.30 WIB" },
+            { nama: "RIFA RIZA", kelas: "X TKR 1", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "SEPTIAN RAMADHAN", kelas: "X TKR 4", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "VULVIAN ARDEN PUTRA PRANOTO", kelas: "X TKR 8", sesi: 1, waktu: "07.00-09.30 WIB" },
+            { nama: "YODY SIAMI MALIK BUDIARTO", kelas: "X TKR 4", sesi: 3, waktu: "13.00-15.00 WIB" },
+            { nama: "ZAKI RASYADAN", kelas: "X TKR 3", sesi: 2, waktu: "10.00-12.30 WIB" }
+        ];
+
+        window.updateClock = () => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID', { hour12: false });
+        };
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        window.switchSection = (id, btn) => {
+            document.querySelectorAll('main > section').forEach(s => s.classList.add('section-hidden'));
+            document.getElementById(id).classList.remove('section-hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+        };
+
+        window.cariJadwal = () => {
+            const nama = document.getElementById('selectNama').value;
+            const siswa = dataSiswa.find(s => s.nama === nama);
+            const div = document.getElementById('hasilCek');
+            if(!siswa) return;
+            
+            div.classList.remove('hidden');
+            div.innerHTML = `<div id="kartu-ujian" class="bg-white p-6 rounded-lg shadow-2xl border-l-8 border-blue-600 text-gray-800">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-lg text-blue-800">KARTU UJIAN PRAKTIK</h3>
+                            <p class="text-xs text-gray-500 uppercase">SMK Karya Bahana Mandiri</p>
+                        </div>
+                        <i class="fas fa-user-circle text-4xl text-gray-300"></i>
+                    </div>
+                    <div class="mt-4 space-y-2 text-sm border-t pt-4">
+                        <p><strong>Nama:</strong> ${siswa.nama}</p>
+                        <p><strong>Kelas:</strong> ${siswa.kelas}</p>
+                        <p><strong>Sesi:</strong> ${siswa.sesi}</p>
+                        <p><strong>Waktu:</strong> ${siswa.waktu}</p>
+                    </div>
+                </div>
+                <button onclick="window.unduh()" class="mt-4 w-full bg-green-600 text-white p-3 rounded font-bold text-sm hover:bg-green-500 transition">Unduh Kartu (JPG)</button>`;
+        };
+
+        window.unduh = async () => {
+            const el = document.getElementById('kartu-ujian');
+            const canvas = await html2canvas(el, { scale: 2 });
+            const link = document.createElement('a');
+            link.download = 'Kartu_Ujian.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
+            link.click();
+        };
+
+        window.onload = () => {
+            const tabel = document.getElementById('tabelJadwal');
+            const select = document.getElementById('selectNama');
+            
+            dataSiswa.sort((a,b) => a.nama.localeCompare(b.nama));
+            dataSiswa.forEach(s => {
+                tabel.innerHTML += `<tr><td class="p-2 border">${s.nama}</td><td class="p-2 border">${s.kelas}</td><td class="p-2 border">${s.sesi}</td><td class="p-2 border">${s.waktu}</td></tr>`;
+                select.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
+            });
+        }
+    </script>
+</body>
+</html>
